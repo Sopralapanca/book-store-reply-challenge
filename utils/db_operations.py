@@ -4,9 +4,9 @@ import requests
 import random
 import time
 from datetime import datetime
+import os
 
 db_path = "./database/books.db"
-
 
 def create_db():
     c.execute('''
@@ -101,6 +101,9 @@ def populate_db():
 
 
 if __name__ == "__main__":
+    if not os.path.exists("./database/"):
+        os.makedirs("./database/")
+
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
 
