@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Details</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h1 class="mb-4">Book Details</h1>
+    <div id="book-details" class="border p-4 rounded">
+        <!-- Dettagli del libro verranno inseriti qui -->
+    </div>
+    <a href="/" class="btn btn-primary mt-4">Back to Book Store</a>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const bookId = new URLSearchParams(window.location.search).get('id');
+        fetch(`/api/books/${bookId}`)
+            .then(response => response.json())
+            .then(book => {
+                if (book.error) {
+                    document.getElementById('book-details').innerHTML = '<p>Book not found.</p>';
+                } else {
+                    document.getElementById('book-details').innerHTML = `
+                        <h2>${book.title}</h2>
+                        <p><strong>Author:</strong> ${book.author}</p>
+                        <p><strong>Year:</strong> ${book.year}</p>
+                        <p><strong>Price:</strong> $${book.price.toFixed(2)}</p>
+                        <p><strong>Tags:</strong> ${book.tags}</p>
+                        <p><strong>Summary:</strong></p>
+                        <textarea class="form-control" rows="10" readonly>${book.summary}</textarea>
+                    `;
+                }
+            });
+    });
+</script>
+</body>
+</html>

@@ -32,10 +32,16 @@
             <!-- Books will be dynamically inserted here -->
         </tbody>
     </table>
-    <div id="pagination" class="mt-3">
-        <button class="btn btn-primary" onclick="previousPage()">Previous</button>
-        <button class="btn btn-primary" onclick="nextPage()">Next</button>
+
+    <!-- Buttons -->
+    <div class="d-flex justify-content-between mt-3">
+        <button class="btn btn-primary" onclick="addBook()">Add Book</button>
+        <div id="pagination">
+            <button class="btn btn-primary" onclick="previousPage()">Previous</button>
+            <button class="btn btn-primary" onclick="nextPage()">Next</button>
+        </div>
     </div>
+
 </div>
 
 <script src="{{ url_for('static', filename='main.js') }}"></script>

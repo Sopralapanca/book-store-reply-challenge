@@ -10,7 +10,7 @@ function loadBooks(page = 1, query = '') {
             const table = document.getElementById('books-table');
             table.innerHTML = '';
             data.books.forEach(book => {
-                const row = `<tr>
+                const row = `<tr onclick="viewBook(${book[0]})">
                                 <td>${book[0]}</td>
                                 <td>${book[1]}</td>
                                 <td>${book[2]}</td>
@@ -84,6 +84,10 @@ function deleteBook(id) {
         }).then(() => loadBooks(currentPage, document.getElementById('search-input').value));
     }
 }
+
+function viewBook(id) {
+        window.location.href = `/book_details?id=${id}`;
+    }
 
 window.onload = () => loadBooks(currentPage);
 

@@ -13,7 +13,7 @@ def connect_db():
 @app.route('/api/books', methods=['GET'])
 def get_books():
     page = request.args.get('page', 1, type=int)
-    per_page = 20
+    per_page = 10
     offset = (page - 1) * per_page
     search_query = request.args.get('search', '')
 
@@ -42,6 +42,32 @@ def get_books():
         'page': page,
         'per_page': per_page
     })
+
+
+
+@app.route('/api/books/<int:id>', methods=['GET'])
+def get_book(id):
+    conn = connect_db()
+    c = conn.cursor()
+    c.execute("SELECT * FROM books WHERE id = ?", (id,))
+    book = c.fetchone()
+    conn.close()
+
+    print(book)
+
+    if book:
+        return jsonify({
+            'id': book[0],
+            'title': book[1],
+            'author': book[2],
+            'year': book[3],
+            'price': book[4],
+            'tags': book[5],
+            'summary': book[6]
+
+        })
+    else:
+        return jsonify({'error': 'Book not found'}), 404
 
 
 @app.route('/api/books', methods=['POST'])
@@ -86,6 +112,11 @@ def delete_book(id):
     conn.commit()
     conn.close()
     return '', 204
+
+
+@app.route('/book_details')
+def book_details():
+    return render_template('book_details.html')
 
 
 @app.route('/')
