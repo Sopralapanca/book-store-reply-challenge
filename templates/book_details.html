@@ -12,6 +12,7 @@
     <div id="book-details" class="border p-4 rounded">
         <!-- Dettagli del libro verranno inseriti qui -->
     </div>
+    <button id="add-summary-btn" class="btn btn-secondary mt-3">Add Summary</button>
     <a href="/" class="btn btn-primary mt-4">Back to Book Store</a>
 </div>
 
@@ -35,6 +36,19 @@
                     `;
                 }
             });
+
+        document.getElementById('add-summary-btn').addEventListener('click', () => {
+            fetch(`/api/generate_summary/${bookId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.log('Error generating summary: ' + data.error);
+                    } else {
+                        document.querySelector('textarea').value = data.summary;
+                        alert('Summary successfully added!');
+                    }
+                });
+        });
     });
 </script>
 </body>

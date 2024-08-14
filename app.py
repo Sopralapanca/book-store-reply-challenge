@@ -1,6 +1,7 @@
 # app.py
-from flask import Flask, request, jsonify, render_template, redirect, url_for
+from flask import Flask, request, jsonify, render_template
 import sqlite3
+from utils.summary_generation import get_summary
 
 app = Flask(__name__)
 db_path = "./database/books.db"
@@ -8,6 +9,39 @@ db_path = "./database/books.db"
 
 def connect_db():
     return sqlite3.connect(db_path)
+
+
+def generate_summary(title, author):
+    if not title or not author:
+        return None
+
+    summary = get_summary(title, author)
+    return summary
+
+
+@app.route('/api/generate_summary/<int:id>', methods=['POST'])
+def generate_summary_for_book(id):
+    conn = connect_db()
+    c = conn.cursor()
+    c.execute("SELECT title, author FROM books WHERE id = ?", (id,))
+    book = c.fetchone()
+
+    if not book:
+        conn.close()
+        return jsonify({'error': 'Book not found'}), 404
+
+    title, author = book
+    summary = generate_summary(title, author)
+
+    if not summary:
+        conn.close()
+        return jsonify({'error': 'Failed to generate summary'}), 500
+
+    c.execute("UPDATE books SET summary = ? WHERE id = ?", (summary, id))
+    conn.commit()
+    conn.close()
+
+    return jsonify({'summary': summary})
 
 
 @app.route('/api/books', methods=['GET'])
@@ -44,7 +78,6 @@ def get_books():
     })
 
 
-
 @app.route('/api/books/<int:id>', methods=['GET'])
 def get_book(id):
     conn = connect_db()
@@ -52,8 +85,6 @@ def get_book(id):
     c.execute("SELECT * FROM books WHERE id = ?", (id,))
     book = c.fetchone()
     conn.close()
-
-    print(book)
 
     if book:
         return jsonify({
