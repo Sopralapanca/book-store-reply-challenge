@@ -49,9 +49,37 @@ function searchBooks() {
 
 function addBook() {
     const title = prompt("Enter book title:");
+    if (title === null) return;
     const author = prompt("Enter book author:");
-    const year = prompt("Enter publication year:");
-    const price = prompt("Enter book price:");
+    if (author === null) return;
+
+    let year;
+    let price;
+    let currentYear = new Date().getFullYear();
+
+    while (true){
+        year = prompt("Enter publication year (e.g., 2020):");
+        if (year === null) return;
+
+        if(!Number.isInteger(parseInt(year)) || parseInt(year) < 0 || parseInt(year) > currentYear || isNaN(parseInt(year)) || !Number.isInteger(parseFloat(year))){
+            alert("Invalid year. Please enter a valid year.");
+        }else {
+            break;
+        }
+    }
+
+    while (true){
+        price = prompt("Enter book price (e.g., 10.00):");
+        if (price === null) return;
+
+        if(!isNaN(price) && parseFloat(price) === price && parseFloat(price) >= 0){
+            alert("Invalid price. Please enter a valid price.");
+        }else {
+            price = parseFloat(price).toFixed(2);
+            break;
+        }
+    }
+
 
     const book = { title, author, year, price };
 
@@ -59,7 +87,14 @@ function addBook() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(book)
-    }).then(() => loadBooks(currentPage, document.getElementById('search-input').value));
+    }).then( response => response.json())
+        .then( data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                loadBooks(currentPage, document.getElementById('search-input').value);
+            }
+        });
 }
 
 function editBook(id) {

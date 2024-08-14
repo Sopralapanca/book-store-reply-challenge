@@ -78,10 +78,17 @@ def create_book():
     year = new_book['year']
     price = new_book['price']
 
+    print("price", price)
+
     conn = connect_db()
     c = conn.cursor()
-    c.execute("INSERT INTO books (title, author, year, price) VALUES (?, ?, ?, ?)",
-              (title, author, year, price))
+    try:
+        c.execute("INSERT INTO books (title, author, year, price) VALUES (?, ?, ?, ?)",
+                  (title, author, year, price))
+    except sqlite3.IntegrityError:
+        conn.close()
+        return jsonify({'error': 'Book already exists'}), 400
+
     conn.commit()
     conn.close()
     return jsonify(new_book), 201
