@@ -1,7 +1,7 @@
 # app.py
 from flask import Flask, request, jsonify, render_template
 import sqlite3
-from utils.summary_generation import get_summary
+from utils.summary_keywords_generation import get_summary_keywords
 
 app = Flask(__name__)
 db_path = "./database/books.db"
@@ -11,16 +11,16 @@ def connect_db():
     return sqlite3.connect(db_path)
 
 
-def generate_summary(title, author):
+def generate_summary_keywords(title, author):
     if not title or not author:
         return None
 
-    summary = get_summary(title, author)
-    return summary
+    summary, keywords = get_summary_keywords(title, author)
+    return summary, keywords
 
 
-@app.route('/api/generate_summary/<int:id>', methods=['POST'])
-def generate_summary_for_book(id):
+@app.route('/api/generate_summary_keywords/<int:id>', methods=['POST'])
+def generate_summary_keywords_for_book(id):
     conn = connect_db()
     c = conn.cursor()
     c.execute("SELECT title, author FROM books WHERE id = ?", (id,))
@@ -31,17 +31,26 @@ def generate_summary_for_book(id):
         return jsonify({'error': 'Book not found'}), 404
 
     title, author = book
-    summary = generate_summary(title, author)
+    summary, keywords = generate_summary_keywords(title, author)
 
     if not summary:
         conn.close()
         return jsonify({'error': 'Failed to generate summary'}), 500
 
+    if not keywords:
+        conn.close()
+        return jsonify({'error': 'Failed to generate keywords'}), 500
+
     c.execute("UPDATE books SET summary = ? WHERE id = ?", (summary, id))
     conn.commit()
+
+    keywords_str = ', '.join(keywords)
+    c.execute("UPDATE books SET tags = ? WHERE id = ?", (keywords_str, id))
+    conn.commit()
+
     conn.close()
 
-    return jsonify({'summary': summary})
+    return jsonify({'summary': summary, 'keywords': keywords})
 
 
 @app.route('/api/books', methods=['GET'])
@@ -109,7 +118,6 @@ def create_book():
     year = new_book['year']
     price = new_book['price']
 
-    print("price", price)
 
     conn = connect_db()
     c = conn.cursor()
