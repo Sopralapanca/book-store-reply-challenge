@@ -28,17 +28,24 @@ def fetch_random_books():
                       'biography', 'mystery', 'technology', 'business',
                       'travel', 'music', 'food', 'health', 'sports', 'religion',
                       'self-help', 'comics', 'romance', 'horror',
-                      'thriller',
+                      'thriller', 'crime', 'humor', 'fiction', 'non-fiction',
                       'poetry', 'drama', 'satire', 'action', 'adventure',
                       'science-fiction', 'children', 'young-adult', 'classic',
-                      'literature', 'philosophy', 'psychology', 'politics']
+                      'literature', 'philosophy', 'psychology', 'politics',
+                      'economics', 'sociology', 'education', 'environment',
+                      'technology', 'programming', 'computers', 'mathematics',
+                      'physics', 'chemistry', 'biology', 'astronomy', 'geology',
+                      'engineering', 'medicine', 'health', 'nutrition',
+                      'fitness', 'yoga', 'meditation', 'mindfulness', 'cooking',
+                      'baking', 'recipes', 'restaurants', 'cuisine', 'food',
+                      ]
 
     book_list = set()
 
     for i in range(200):
         query = random.choice(random_queries)
         print(f"Fetching books for query: {query}")
-        url = f"https://www.googleapis.com/books/v1/volumes?q={query}&maxResults=35"
+        url = f"https://www.googleapis.com/books/v1/volumes?q={query}&maxResults=35&langRestrict=en"
         response = requests.get(url)
 
         if response.status_code == 200:
@@ -47,8 +54,12 @@ def fetch_random_books():
 
             for j in range(min(len(books), 10)):
                 book = books[j]
-
                 volume_info = book.get('volumeInfo', {})
+
+                description = volume_info.get('description', 'N/A')
+                if len(description) < 1000 or len(description) > 5000:
+                    continue
+
                 sale_info = book.get('saleInfo', {})
 
                 title = volume_info.get('title', 'N/A')

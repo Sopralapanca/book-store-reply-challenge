@@ -44,8 +44,8 @@ def generate_summary_keywords_for_book(id):
     c.execute("UPDATE books SET summary = ? WHERE id = ?", (summary, id))
     conn.commit()
 
-    keywords_str = ', '.join(keywords)
-    c.execute("UPDATE books SET tags = ? WHERE id = ?", (keywords_str, id))
+
+    c.execute("UPDATE books SET tags = ? WHERE id = ?", (keywords, id))
     conn.commit()
 
     conn.close()

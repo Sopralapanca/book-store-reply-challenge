@@ -69,9 +69,7 @@ def summarize_text(text):
     text = re.sub(r'\s+', ' ', text)
     text = text.strip()
 
-    window_size = 300
     overlap = 50
-    max_length = 150
     min_length = 50
 
     summarizer = pipeline("summarization", model="lxyuan/distilbart-finetuned-summarization")
@@ -82,6 +80,8 @@ def summarize_text(text):
 
     # total number of tokens
     total_tokens = input_ids.size(0)
+    window_size = min(300, total_tokens)
+    max_length = min(150, window_size//2)
 
     # Set the stride based on window size and overlap
     stride = window_size - overlap
@@ -92,7 +92,7 @@ def summarize_text(text):
     for i in range(0, total_tokens, stride):
         chunk_ids = input_ids[i:i + window_size]
 
-        print(f"Processing chunk: {i}:{i+window_size} of {chunk_ids.size(0)} tokens")
+        print(f"Processing chunk: {i}:{i+window_size} of {total_tokens} tokens")
 
         if chunk_ids.size(0) == 0:
             break
@@ -135,7 +135,15 @@ def extract_keywords(text):
 
     keywords = list(s)
 
-    return keywords
+    #for each element of the list, if it ends with a whitespace or punctuation, remove it
+    for i in range(len(keywords)):
+        if keywords[i][-1] in [' ', ',', '.', ':', ';', '!', '?']:
+            keywords[i] = keywords[i][:-1]
+
+    keywords_str = ', '.join(keywords)
+    print(keywords_str)
+
+    return keywords_str
 
 
 def get_summary_keywords(title, author):
