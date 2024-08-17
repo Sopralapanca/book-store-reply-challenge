@@ -13,18 +13,53 @@
 
     <!-- Search Bar -->
     <div class="input-group mb-4">
-        <input type="text" class="form-control" id="search-input" placeholder="Ricerca per titolo, autore, o anno">
+        <input type="text" class="form-control" id="search-input" placeholder="Search by title, author, year...">
     </div>
 
     <!-- Books Table -->
     <table class="table table-bordered">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Author</th>
-                <th>Year</th>
-                <th>Price</th>
+                <th>
+                    <div class="d-flex justify-content-center align-items-center">
+                        ID
+                        <button class="btn btn-sm btn-light ml-2" onclick="sortTable('id')">
+                            <span id="sort-icon-id" class="sort-icon">&#9650;</span>
+                        </button>
+                    </div>
+                </th>
+                <th>
+                    <div class="d-flex justify-content-center align-items-center">
+                        Title
+                        <button class="btn btn-sm btn-light ml-2" onclick="sortTable('title')">
+                            <span id="sort-icon-title" class="sort-icon"></span>
+                        </button>
+                    </div>
+                </th>
+                <th>
+                    <div class="d-flex justify-content-center align-items-center">
+                        Author
+                        <button class="btn btn-sm btn-light ml-2" onclick="sortTable('author')">
+                            <span id="sort-icon-author" class="sort-icon"></span>
+                        </button>
+                    </div>
+                </th>
+                <th>
+                    <div class="d-flex justify-content-center align-items-center">
+                        Year
+                        <button class="btn btn-sm btn-light ml-2" onclick="sortTable('year')">
+                            <span id="sort-icon-year" class="sort-icon"></span>
+                        </button>
+                    </div>
+                </th>
+                <th>
+                    <div class="d-flex justify-content-center align-items-center">
+                        Price
+                        <button class="btn btn-sm btn-light ml-2" onclick="sortTable('price')">
+                            <span id="sort-icon-price" class="sort-icon"></span>
+                        </button>
+                    </div>
+                </th>
                 <th>Actions</th>
             </tr>
         </thead>

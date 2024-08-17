@@ -1,21 +1,24 @@
 let currentPage = 1;
+let currentSortColumn = 'id';
+let currentSortOrder = 'asc';
 
 function loadBooks(page = 1, query = '') {
 
     const searchQuery = query ? `&search=${query}` : '';
+    const url = `/api/books?page=${page}${searchQuery}&sort_by=${currentSortColumn}&sort_order=${currentSortOrder}`;
 
-    fetch(`/api/books?page=${page}${searchQuery}`)
+    fetch(url)
         .then(response => response.json())
         .then(data => {
             const table = document.getElementById('books-table');
             table.innerHTML = '';
             data.books.forEach(book => {
-                const row = `<tr onclick="viewBook(${book[0]})">
-                                <td>${book[0]}</td>
-                                <td>${book[1]}</td>
-                                <td>${book[2]}</td>
-                                <td>${book[3]}</td>
-                                <td>${book[4]}</td>
+                const row = `<tr>
+                                <td onclick="viewBook(${book[0]})">${book[0]}</td>
+                                <td onclick="viewBook(${book[0]})">${book[1]}</td>
+                                <td onclick="viewBook(${book[0]})">${book[2]}</td>
+                                <td onclick="viewBook(${book[0]})">${book[3]}</td>
+                                <td onclick="viewBook(${book[0]})">${book[4]}</td>
                                 <td>
                                     <button class="btn btn-warning" onclick="editBook(${book[0]})">Edit</button>
                                     <button class="btn btn-danger" onclick="deleteBook(${book[0]})">Delete</button>
@@ -30,6 +33,39 @@ function loadBooks(page = 1, query = '') {
             document.querySelector("#pagination button:first-child").disabled = currentPage === 1;
             document.querySelector("#pagination button:last-child").disabled = currentPage * data.per_page >= data.total_books;
         });
+}
+
+
+function sortTable(column) {
+    // Toggle dell'ordine di ordinamento se la stessa colonna viene cliccata
+    if (currentSortColumn === column) {
+        currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSortColumn = column;
+        currentSortOrder = 'asc';  // Resetta a ascendente quando cambi colonna
+    }
+
+    updateSortIcons();
+    loadBooks();  // Ricarica i libri con il nuovo ordinamento
+}
+
+
+
+function updateSortIcons() {
+    const columns = ['id', 'title', 'author', 'year', 'price'];
+
+    columns.forEach(col => {
+        const iconElement = document.getElementById(`sort-icon-${col}`);
+        if (col === currentSortColumn) {
+            if (currentSortOrder === 'asc') {
+                iconElement.innerHTML = '&#9650;';  // Freccia verso l'alto
+            } else {
+                iconElement.innerHTML = '&#9660;';  // Freccia verso il basso
+            }
+        } else {
+            iconElement.innerHTML = '&#9651;';  // freccia bidirezionale
+        }
+    });
 }
 
 function previousPage() {
@@ -47,7 +83,7 @@ function searchBooks() {
     loadBooks(1, query);  // Start search from the first page
 }
 
-function addBook() {
+function bookChecks(){
     const title = prompt("Enter book title:");
     if (title === null) return;
     const author = prompt("Enter book author:");
@@ -72,16 +108,23 @@ function addBook() {
         price = prompt("Enter book price (e.g., 10.00):");
         if (price === null) return;
 
-        if(!isNaN(price) && parseFloat(price) === price && parseFloat(price) >= 0){
-            alert("Invalid price. Please enter a valid price.");
-        }else {
+        if (!isNaN(price) && price.trim() !== "" && parseFloat(price) === price && parseFloat(price) >= 0) {
             price = parseFloat(price).toFixed(2);
             break;
+        } else {
+            alert("Invalid price. Please enter a valid price.");
         }
     }
 
 
     const book = { title, author, year, price };
+
+    return book;
+}
+
+
+function addBook() {
+    let book = bookChecks();
 
     fetch('/api/books', {
         method: 'POST',
@@ -98,12 +141,8 @@ function addBook() {
 }
 
 function editBook(id) {
-    const title = prompt("Enter new title:");
-    const author = prompt("Enter new author:");
-    const year = prompt("Enter new year:");
-    const price = prompt("Enter new price:");
 
-    const book = { title, author, year, price };
+    let book = bookChecks();
 
     fetch(`/api/books/${id}`, {
         method: 'PUT',
@@ -124,7 +163,13 @@ function viewBook(id) {
         window.location.href = `/book_details?id=${id}`;
     }
 
-window.onload = () => loadBooks(currentPage);
+//window.onload = () => loadBooks(currentPage);
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateSortIcons();  // Imposta la freccia predefinita
+    loadBooks(currentPage);  // Carica i libri
+});
 
 // Add event listener to search input - dynamic search
 document.getElementById('search-input').addEventListener('input', () => {

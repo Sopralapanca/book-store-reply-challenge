@@ -56,20 +56,25 @@ def generate_summary_keywords_for_book(id):
 @app.route('/api/books', methods=['GET'])
 def get_books():
     page = request.args.get('page', 1, type=int)
-    per_page = 10
+    per_page = request.args.get('per_page', 10, type=int)
     offset = (page - 1) * per_page
     search_query = request.args.get('search', '')
+
+    sort_by = request.args.get('sort_by', 'id')
+    sort_order = request.args.get('sort_order', 'asc')
+
+    base_query = "SELECT * FROM books WHERE title LIKE ? OR author LIKE ? OR year LIKE ?"
+    sort_query = f"ORDER BY {sort_by} {sort_order.upper()} LIMIT ? OFFSET ?"
+    full_query = f"{base_query} {sort_query}"
 
     conn = connect_db()
     c = conn.cursor()
 
     if search_query:
         search_query = f"%{search_query}%"
-        c.execute("""SELECT * FROM books 
-                     WHERE title LIKE ? OR author LIKE ? OR year LIKE ? 
-                     LIMIT ? OFFSET ?""", (search_query, search_query, search_query, per_page, offset))
+        c.execute(full_query, (search_query, search_query, search_query, per_page, offset))
     else:
-        c.execute("SELECT * FROM books LIMIT ? OFFSET ?", (per_page, offset))
+        c.execute(full_query, ('%', '%', '%', per_page, offset))
 
     books = c.fetchall()
 
