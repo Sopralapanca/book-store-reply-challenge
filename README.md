@@ -46,9 +46,9 @@ Il database utilizzato è SQLite, un database SQL leggero e veloce.
 1. Visualizzazione dei libri :green_circle:
 2. Crea un nuovo libro :green_circle:
 3. Modifica le informazioni del libro :green_circle:
-4. Elimina un libro :yellow_circle:
+4. Elimina un libro :green_circle:
 5. Filtra i libri :green_circle:
-6. Ordina i libri :red_circle:
+6. Ordina i libri :green_circle:
 7. Pagina dettagli del libro :green_circle:
 8. Creazione account utente :red_circle:
 9. Sistema di recensioni/rating :red_circle:
