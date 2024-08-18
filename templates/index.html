@@ -6,6 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Store</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Optional: Add some animation for the collapsing effect */
+        #filterCollapse {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        #filterCollapse.open {
+            max-height: 500px; /* Adjust to fit content */
+            transition: max-height 0.5s ease-in;
+        }
+    </style>
 </head>
 <body>
 <div class="container mt-5">
@@ -15,6 +27,36 @@
     <div class="input-group mb-4">
         <input type="text" class="form-control" id="search-input" placeholder="Search by title, author, year...">
     </div>
+
+    <!-- Filter Options -->
+    <div id="filter-options" class="mb-4">
+        <h5>Filters</h5>
+
+        <!-- Collapsible Button -->
+        <button class="btn btn-secondary mb-3" type="button" onclick="toggleFilters()">
+            Click to open filters
+        </button>
+
+        <!-- Collapsible Content -->
+        <div id="filterCollapse">
+            <!-- Year Filters -->
+            <div class="mb-3">
+                <strong>Year:</strong>
+                <div id="year-filters" class="d-flex flex-wrap">
+                    <!-- Year checkboxes will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <!-- Author Filters -->
+            <div>
+                <strong>Author:</strong>
+                <div id="author-filters" class="d-flex flex-wrap">
+                    <!-- Author checkboxes will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Books Table -->
     <table class="table table-bordered">

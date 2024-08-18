@@ -5,7 +5,15 @@ let currentSortOrder = 'asc';
 function loadBooks(page = 1, query = '') {
 
     const searchQuery = query ? `&search=${query}` : '';
-    const url = `/api/books?page=${page}${searchQuery}&sort_by=${currentSortColumn}&sort_order=${currentSortOrder}`;
+    const selectedYears = Array.from(document.querySelectorAll("#year-filters input[type='checkbox']:checked"))
+        .map(cb => cb.value).join(',');
+    const selectedAuthors = Array.from(document.querySelectorAll("#author-filters input[type='checkbox']:checked"))
+        .map(cb => cb.value).join(',');
+
+
+
+    const filters = `&years=${selectedYears}&authors=${selectedAuthors}`;
+    const url = `/api/books?page=${page}${searchQuery}&sort_by=${currentSortColumn}&sort_order=${currentSortOrder}${filters}`;
 
     fetch(url)
         .then(response => response.json())
@@ -34,6 +42,57 @@ function loadBooks(page = 1, query = '') {
             document.querySelector("#pagination button:last-child").disabled = currentPage * data.per_page >= data.total_books;
         });
 }
+
+function toggleFilters() {
+        var filterCollapse = document.getElementById('filterCollapse');
+        if (filterCollapse.classList.contains('open')) {
+            filterCollapse.classList.remove('open');
+        } else {
+            filterCollapse.classList.add('open');
+        }
+    }
+
+function handleFilterChange() {
+    loadBooks(currentPage, document.getElementById('search-input').value);
+}
+
+function loadFilters() {
+    fetch('/api/filters')
+        .then(response => response.json())
+        .then(data => {
+            const yearFilters = document.getElementById('year-filters');
+            const authorFilters = document.getElementById('author-filters');
+
+            yearFilters.innerHTML = '';
+            authorFilters.innerHTML = '';
+
+
+            data.years.forEach(year => {
+                const checkbox = `<label style="margin-right: 10px;">
+                                        <input type="checkbox" value="${year}" onchange="handleFilterChange()"> ${year}</label><br>`;
+                yearFilters.insertAdjacentHTML('beforeend', checkbox);
+            });
+
+            // Split and flatten authors list
+            let individualAuthors = [];
+            data.authors.forEach(authorString => {
+                individualAuthors = individualAuthors.concat(authorString.split(',').map(author => author.trim()));
+            });
+
+            // Remove duplicates
+            individualAuthors = [...new Set(individualAuthors)];
+
+            // Populate author filters
+            individualAuthors.forEach(author => {
+                const checkbox = `<label style="margin-right: 10px;">
+                                    <input type="checkbox" value="${author}" onchange="handleFilterChange()"> ${author}
+                                  </label><br>`;
+                authorFilters.insertAdjacentHTML('beforeend', checkbox);
+            });
+        });
+}
+
+
 
 
 function sortTable(column) {
@@ -108,7 +167,8 @@ function bookChecks(){
         price = prompt("Enter book price (e.g., 10.00):");
         if (price === null) return;
 
-        if (!isNaN(price) && price.trim() !== "" && parseFloat(price) === price && parseFloat(price) >= 0) {
+        price = price.trim()
+        if (!isNaN(price) && price !== "" && Number(price) >= 0) {
             price = parseFloat(price).toFixed(2);
             break;
         } else {
@@ -163,12 +223,12 @@ function viewBook(id) {
         window.location.href = `/book_details?id=${id}`;
     }
 
-//window.onload = () => loadBooks(currentPage);
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    updateSortIcons();  // Imposta la freccia predefinita
-    loadBooks(currentPage);  // Carica i libri
+    updateSortIcons();
+    loadFilters();
+    loadBooks(currentPage);
 });
 
 // Add event listener to search input - dynamic search

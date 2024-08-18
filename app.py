@@ -44,7 +44,6 @@ def generate_summary_keywords_for_book(id):
     c.execute("UPDATE books SET summary = ? WHERE id = ?", (summary, id))
     conn.commit()
 
-
     c.execute("UPDATE books SET tags = ? WHERE id = ?", (keywords, id))
     conn.commit()
 
@@ -63,23 +62,39 @@ def get_books():
     sort_by = request.args.get('sort_by', 'id')
     sort_order = request.args.get('sort_order', 'asc')
 
-    base_query = "SELECT * FROM books WHERE title LIKE ? OR author LIKE ? OR year LIKE ?"
-    sort_query = f"ORDER BY {sort_by} {sort_order.upper()} LIMIT ? OFFSET ?"
-    full_query = f"{base_query} {sort_query}"
+    base_query = "SELECT * FROM books WHERE (title LIKE ? OR author LIKE ? OR year LIKE ?)"
+    count_query = "SELECT COUNT(*) FROM books WHERE (title LIKE ? OR author LIKE ? OR year LIKE ?)"
+
+    filter_query = ""
+    params = [f"%{search_query}%", f"%{search_query}%", f"%{search_query}%"]
+
+    # Add filters for years
+    selected_years = request.args.get('years', '').split(',')
+    if selected_years and selected_years[0]:
+        base_query += f" AND year IN ({','.join('?' * len(selected_years))})"
+        count_query += f" AND year IN ({','.join('?' * len(selected_years))})"
+        params.extend(selected_years)
+
+    # Add filters for authors
+    selected_authors = request.args.get('authors', '').split(',')
+    if selected_authors and selected_authors[0]:
+        base_query += f" AND author IN ({','.join('?' * len(selected_authors))})"
+        count_query += f" AND author IN ({','.join('?' * len(selected_authors))})"
+        params.extend(selected_authors)
+
+    # Add sorting and pagination
+    sort_query = f" ORDER BY {sort_by} {sort_order.upper()} LIMIT ? OFFSET ?"
+    full_query = f"{base_query}{sort_query}"
 
     conn = connect_db()
     c = conn.cursor()
 
-    if search_query:
-        search_query = f"%{search_query}%"
-        c.execute(full_query, (search_query, search_query, search_query, per_page, offset))
-    else:
-        c.execute(full_query, ('%', '%', '%', per_page, offset))
-
+    # Execute the full query to get the books
+    c.execute(full_query, params + [per_page, offset])
     books = c.fetchall()
 
-    c.execute("SELECT COUNT(*) FROM books WHERE title LIKE ? OR author LIKE ? OR year LIKE ?",
-              (search_query, search_query, search_query) if search_query else ('%', '%', '%'))
+    # Execute the count query to get the total number of books
+    c.execute(f"{count_query}{filter_query}", params)
     total_books = c.fetchone()[0]
 
     conn.close()
@@ -115,6 +130,22 @@ def get_book(id):
         return jsonify({'error': 'Book not found'}), 404
 
 
+@app.route('/api/filters', methods=['GET'])
+def get_filters():
+    conn = connect_db()
+    c = conn.cursor()
+
+    c.execute("SELECT DISTINCT year FROM books ORDER BY year")
+    years = [row[0] for row in c.fetchall()]
+
+    c.execute("SELECT DISTINCT author FROM books ORDER BY author")
+    authors = [row[0] for row in c.fetchall()]
+
+    conn.close()
+
+    return jsonify({'years': years, 'authors': authors})
+
+
 @app.route('/api/books', methods=['POST'])
 def create_book():
     new_book = request.get_json()
@@ -122,7 +153,6 @@ def create_book():
     author = new_book['author']
     year = new_book['year']
     price = new_book['price']
-
 
     conn = connect_db()
     c = conn.cursor()
