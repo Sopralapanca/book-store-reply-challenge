@@ -64,7 +64,7 @@ def get_info(title, author):
     return google_books_summary
 
 
-def summarize_text(text):
+def summarize_text(text: str) -> str:
     # preprocess the text
     text = re.sub(r'\s+', ' ', text)
     text = text.strip()
@@ -75,13 +75,14 @@ def summarize_text(text):
     summarizer = pipeline("summarization", model="lxyuan/distilbart-finetuned-summarization")
 
     #summarize the text in chunks if it is too long
-    inputs = summarizer.tokenizer(text, return_tensors="pt", truncation=False) # if sequence length is too long it will return a waring, can be ignored
+    inputs = summarizer.tokenizer(text, return_tensors="pt",
+                                  truncation=False)  # if sequence length is too long it will return a waring, can be ignored
     input_ids = inputs['input_ids'][0]
 
     # total number of tokens
     total_tokens = input_ids.size(0)
     window_size = min(300, total_tokens)
-    max_length = min(150, window_size//2)
+    max_length = min(150, window_size // 2)
 
     # Set the stride based on window size and overlap
     stride = window_size - overlap
@@ -92,7 +93,8 @@ def summarize_text(text):
     for i in range(0, total_tokens, stride):
         chunk_ids = input_ids[i:i + window_size]
 
-        print(f"Processing chunk: {i}:{i+window_size} of {total_tokens} tokens")
+
+        print(f"Processing chunk: {i}:{i + window_size} of {total_tokens} tokens")
 
         if chunk_ids.size(0) == 0:
             break
@@ -113,7 +115,8 @@ def summarize_text(text):
 
     return final_summary[0]['summary_text']
 
-def extract_keywords(text):
+
+def extract_keywords(text: str) -> str:
     print("Extracting keywords")
     text = re.sub(r'[\s\r\n\t]+', ' ', text).strip()
 
@@ -141,8 +144,6 @@ def extract_keywords(text):
             keywords[i] = keywords[i][:-1]
 
     keywords_str = ', '.join(keywords)
-    print(keywords_str)
-
     return keywords_str
 
 
@@ -158,7 +159,10 @@ def get_summary_keywords(title, author):
     combined_summary = f"Can you provide a description of the book? {title} - {author} - {categories} - {description}"
     summary = summarize_text(combined_summary)
 
-    combined_keywords = f"{title}, {author}, {categories}, {description}"
+    combined_keywords = f"{title}, {author}, {description}"
     keywords = extract_keywords(combined_keywords)
+
+    if categories:
+        keywords = keywords + ", "+categories
 
     return summary, keywords

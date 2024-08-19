@@ -64,23 +64,28 @@ def get_books():
 
     base_query = "SELECT * FROM books WHERE (title LIKE ? OR author LIKE ? OR year LIKE ?)"
     count_query = "SELECT COUNT(*) FROM books WHERE (title LIKE ? OR author LIKE ? OR year LIKE ?)"
-
-    filter_query = ""
     params = [f"%{search_query}%", f"%{search_query}%", f"%{search_query}%"]
+
+    or_conditions = []
 
     # Add filters for years
     selected_years = request.args.get('years', '').split(',')
     if selected_years and selected_years[0]:
-        base_query += f" AND year IN ({','.join('?' * len(selected_years))})"
-        count_query += f" AND year IN ({','.join('?' * len(selected_years))})"
-        params.extend(selected_years)
+        year_filters = ' OR '.join([f"year = ?" for _ in selected_years])
+        or_conditions.append(f"({year_filters})")
+        params.extend([year.strip() for year in selected_years])
 
     # Add filters for authors
     selected_authors = request.args.get('authors', '').split(',')
+
     if selected_authors and selected_authors[0]:
-        base_query += f" AND author IN ({','.join('?' * len(selected_authors))})"
-        count_query += f" AND author IN ({','.join('?' * len(selected_authors))})"
-        params.extend(selected_authors)
+        author_filters = ' OR '.join([f"author LIKE ?" for _ in selected_authors])
+        or_conditions.append(f"({author_filters})")
+        params.extend([f"%{author.strip()}%" for author in selected_authors])
+
+    if or_conditions:
+        base_query += " AND (" + " OR ".join(or_conditions) + ")"
+        count_query += " AND (" + " OR ".join(or_conditions) + ")"
 
     # Add sorting and pagination
     sort_query = f" ORDER BY {sort_by} {sort_order.upper()} LIMIT ? OFFSET ?"
@@ -89,12 +94,13 @@ def get_books():
     conn = connect_db()
     c = conn.cursor()
 
+
     # Execute the full query to get the books
     c.execute(full_query, params + [per_page, offset])
     books = c.fetchall()
 
     # Execute the count query to get the total number of books
-    c.execute(f"{count_query}{filter_query}", params)
+    c.execute(count_query, params)
     total_books = c.fetchone()[0]
 
     conn.close()
