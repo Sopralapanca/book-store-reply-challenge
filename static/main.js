@@ -45,10 +45,17 @@ function loadBooks(page = 1, query = '') {
 
 function toggleFilters() {
         var filterCollapse = document.getElementById('filterCollapse');
+        const toggleButton = document.querySelector('button[onclick="toggleFilters()"]');
+
         if (filterCollapse.classList.contains('open')) {
+            filterCollapse.style.height = 0;
             filterCollapse.classList.remove('open');
+            toggleButton.textContent = "Click to open filters";
+
         } else {
+            filterCollapse.style.height = filterCollapse.scrollHeight + 'px';
             filterCollapse.classList.add('open');
+            toggleButton.textContent = "Click to close filters";
         }
     }
 
@@ -195,6 +202,7 @@ function addBook() {
             if (data.error) {
                 alert(data.error);
             } else {
+                alert("Book entered correctly");
                 loadBooks(currentPage, document.getElementById('search-input').value);
             }
         });
