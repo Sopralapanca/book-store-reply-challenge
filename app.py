@@ -54,6 +54,10 @@ def generate_summary_keywords_for_book(id):
 
 @app.route('/api/books', methods=['GET'])
 def get_books():
+    """
+    Method to get a list of books, it is used in the homapage
+    :return: List of books in JSON format
+    """
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
     offset = (page - 1) * per_page
@@ -77,11 +81,11 @@ def get_books():
 
     # Add filters for authors
     selected_authors = request.args.get('authors', '').split(',')
-
     if selected_authors and selected_authors[0]:
         author_filters = ' OR '.join([f"author LIKE ?" for _ in selected_authors])
         or_conditions.append(f"({author_filters})")
         params.extend([f"%{author.strip()}%" for author in selected_authors])
+
 
     if or_conditions:
         base_query += " AND (" + " OR ".join(or_conditions) + ")"
@@ -93,7 +97,6 @@ def get_books():
 
     conn = connect_db()
     c = conn.cursor()
-
 
     # Execute the full query to get the books
     c.execute(full_query, params + [per_page, offset])
@@ -114,7 +117,13 @@ def get_books():
 
 
 @app.route('/api/books/<int:id>', methods=['GET'])
-def get_book(id):
+def get_book(id: int):
+    """
+    Method to get information about a specific book, used in book_details
+    :param id: int, identifier of a book
+    :return: book information in JSON format
+    """
+
     conn = connect_db()
     c = conn.cursor()
     c.execute("SELECT * FROM books WHERE id = ?", (id,))
@@ -138,6 +147,10 @@ def get_book(id):
 
 @app.route('/api/filters', methods=['GET'])
 def get_filters():
+    """
+    Gets all non-repeating authors and non-repeating years from the db to show them among the possible filters
+    :return: a list of years and authors in JSON format
+    """
     conn = connect_db()
     c = conn.cursor()
 

@@ -10,8 +10,6 @@ function loadBooks(page = 1, query = '') {
     const selectedAuthors = Array.from(document.querySelectorAll("#author-filters input[type='checkbox']:checked"))
         .map(cb => cb.value).join(',');
 
-
-
     const filters = `&years=${selectedYears}&authors=${selectedAuthors}`;
     const url = `/api/books?page=${page}${searchQuery}&sort_by=${currentSortColumn}&sort_order=${currentSortOrder}${filters}`;
 
@@ -22,11 +20,11 @@ function loadBooks(page = 1, query = '') {
             table.innerHTML = '';
             data.books.forEach(book => {
                 const row = `<tr>
-                                <td onclick="viewBook(${book[0]})">${book[0]}</td>
-                                <td onclick="viewBook(${book[0]})">${book[1]}</td>
-                                <td onclick="viewBook(${book[0]})">${book[2]}</td>
-                                <td onclick="viewBook(${book[0]})">${book[3]}</td>
-                                <td onclick="viewBook(${book[0]})">${book[4]}</td>
+                                <td onclick="viewBook(${book[0]})" style="cursor: pointer;">${book[0]}</td>
+                                <td onclick="viewBook(${book[0]})" style="cursor: pointer;">${book[1]}</td>
+                                <td onclick="viewBook(${book[0]})" style="cursor: pointer;">${book[2]}</td>
+                                <td onclick="viewBook(${book[0]})" style="cursor: pointer;">${book[3]}</td>
+                                <td onclick="viewBook(${book[0]})" style="cursor: pointer;">${book[4]}</td>
                                 <td>
                                     <button class="btn btn-warning" onclick="editBook(${book[0]})">Edit</button>
                                     <button class="btn btn-danger" onclick="deleteBook(${book[0]})">Delete</button>
@@ -103,7 +101,6 @@ function loadFilters() {
 
 
 function sortTable(column) {
-    // Toggle dell'ordine di ordinamento se la stessa colonna viene cliccata
     if (currentSortColumn === column) {
         currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
     } else {
@@ -129,7 +126,7 @@ function updateSortIcons() {
                 iconElement.innerHTML = '&#9660;';  // Freccia verso il basso
             }
         } else {
-            iconElement.innerHTML = '&#9651;';  // freccia bidirezionale
+            iconElement.innerHTML = '&#9651;';  // freccia vuota
         }
     });
 }
